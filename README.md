@@ -6,3 +6,5 @@ Dependancies must be installed first:
 pip install pyephem
 
 pip install pysimplegui
+
+pip install pyserial
