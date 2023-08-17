@@ -60,30 +60,8 @@ signal.signal(signal.SIGINT, signal_handler)
     raw: b'$GPGGA,132420.00,5406.22609,N,00054.12943,W,1,05,6.28,59.2,M,47.2,M,,*7A\r\n'
 '''
 
-import pynmea2
-
-def parseGPS2(data):
-    #if data[0:6] == "$GPRMC":
-    try:
-        msg = pynmea2.parse(data.decode("utf-8"))
-    except pynmea2.ParseError:
-        print("Parse Error")
-        return
-    
-    print(msg)
-    
-    # if msg.status == 'V':
-    #     print("no satellite data available")
-    #     return
-    #time = f"{msg.}"
-    lat = f"{msg.latitude:.6f}"
-    lon = f"{msg.longitude:.6f}"
-    alt = f"{msg.altitude:.2f}" if msg.altitude else '0'
-    #alt = 0
-    #return {'date':f"{msg.datetime.date()} {time}", 'lat':lat, 'lon':lon, 'alt':alt}
-    print(f"{lat, lon, alt}")
-
 def parseGPS(data):
+    ''' Parses the raw NMEA string into a dictionary of date, lat, lon, alt '''
     global date
     #print ("raw:", data) #prints raw data
     data = data.decode("utf-8")
