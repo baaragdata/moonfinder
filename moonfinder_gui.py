@@ -15,6 +15,7 @@ import PySimpleGUI as sg
 
 port = "COM6"
 DEBUG = True
+target_name = None
 
 gpsDict = {}
 ser = serial.Serial(port, baudrate = 9600, timeout = 0.5)
@@ -38,7 +39,7 @@ layout = [  [sg.Text("Observatory:"), sg.Text("Latitude (deg)"), sg.Text("Longit
             [sg.Text("Sync:"), sg.Button("Sync Sun"), sg.Button("Sync Moon")]]
 
 # Create the window
-window = sg.Window("MoonFinder", layout)
+window = sg.Window("MoonFinder", layout, finalize=True)
 
 exit_event = threading.Event()  # Create an event to handle exit
 
@@ -51,9 +52,12 @@ def signal_handler(signal=None, frame=None):
 signal.signal(signal.SIGINT, signal_handler)
 
 
-
-
 ############################################## MAIN PROGRAM ####################################################################
+
+
+from motors import motors
+
+smc = motors()
 
 
 ''' RAW NEMA STRING
@@ -116,6 +120,7 @@ def getGPS():
 
 def calcPositions():
     '''Calculate the Moon position based on GPS coordinates / data'''
+    global moonAz, moonAlt
     while True:
         if exit_event.is_set():
             break
@@ -185,6 +190,8 @@ def calcPositions():
                     #     mount.goto(0,0,synchronous=False)
                     # else:         # Below horizon --- for testing purposes
                     #     mount.goto(-10,-moonEl,synchronous=False)
+                    if target_name == "Moon":
+                        smc.goto(moonAlt,moonAz,synchronous=False)
 
 clacPositionsThread = threading.Thread(target=calcPositions)
 clacPositionsThread.start()
@@ -247,6 +254,15 @@ while True:
             target_name = "Moon"
             window["Sun"].update(button_color=('black', 'orange'))
             window["Moon"].update(button_color=('white', 'red'))
+            target_name = "Moon"
+        elif event == "North":
+            smc.set_pos(0,0)
+        elif event == "South":
+            smc.set_pos(0,180)
+        elif event == "East":
+            smc.set_pos(0,90)
+        elif event == "West":
+            smc.set_pos(0,270)
 
 
 window.close()
